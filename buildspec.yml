@@ -1,0 +1,60 @@
+version: 0.2
+
+env:
+  variables:
+    STACK_NAME: "ticket-booking-app"
+    REGION: "us-east-1"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "Installing AWS SAM CLI..."
+      - pip install --upgrade aws-sam-cli
+      - sam --version
+
+  pre_build:
+    commands:
+      - echo "Installing backend dependencies..."
+      - cd backend && npm install --production && cd ..
+
+  build:
+    commands:
+      - echo "Building SAM application..."
+      - cd infrastructure
+      - sam build --template template.yaml
+      - echo "Deploying backend stack..."
+      - >
+        sam deploy
+        --stack-name $STACK_NAME
+        --region $REGION
+        --capabilities CAPABILITY_IAM
+        --no-confirm-changeset
+        --no-fail-on-empty-changeset
+        --resolve-s3
+      - cd ..
+
+  post_build:
+    commands:
+      - echo "Fetching stack outputs..."
+      - >
+        FRONTEND_BUCKET=$(aws cloudformation describe-stacks
+        --stack-name $STACK_NAME --region $REGION
+        --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue"
+        --output text)
+      - >
+        API_ENDPOINT=$(aws cloudformation describe-stacks
+        --stack-name $STACK_NAME --region $REGION
+        --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue"
+        --output text)
+      - echo "Injecting API endpoint into frontend config..."
+      - echo "window.API_BASE_URL = \"$API_ENDPOINT\";" > frontend/config.js
+      - echo "Deploying frontend to S3..."
+      - aws s3 sync frontend/ s3://$FRONTEND_BUCKET/ --delete
+      - echo "Deployment complete. Frontend bucket $FRONTEND_BUCKET, API $API_ENDPOINT"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: infrastructure/.aws-sam/build

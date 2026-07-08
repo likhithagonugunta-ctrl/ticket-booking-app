@@ -1,0 +1,13 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "ticket-booking-app"
+resolve_s3 = true
+s3_prefix = "ticket-booking-app"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "ProjectName=\"ticket-booking-app\" Stage=\"prod\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-east-1"

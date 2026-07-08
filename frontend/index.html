@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ticket Booking</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎫 Ticket Booking</h1>
+  </header>
+
+  <main>
+    <section id="events-section">
+      <h2>Upcoming Events</h2>
+      <div id="events-list" class="grid">Loading events...</div>
+    </section>
+
+    <section id="booking-section" class="hidden">
+      <h2>Book Tickets</h2>
+      <form id="booking-form">
+        <input type="hidden" id="booking-event-id" />
+        <p id="booking-event-name"></p>
+
+        <label for="userName">Full name</label>
+        <input type="text" id="userName" required />
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+
+        <label for="seats">Number of seats</label>
+        <input type="number" id="seats" min="1" value="1" required />
+
+        <button type="submit">Confirm Booking</button>
+        <button type="button" id="cancel-booking">Cancel</button>
+      </form>
+      <p id="booking-status"></p>
+    </section>
+  </main>
+
+  <!-- config.js is generated/overwritten by the CI/CD pipeline with the real API URL -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
