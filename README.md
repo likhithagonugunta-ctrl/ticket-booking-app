@@ -101,7 +101,60 @@ From then on, every push to `main` triggers CodeBuild, which runs `buildspec.yml
 builds the SAM app, deploys the backend stack, injects the live API URL into
 `frontend/config.js`, and syncs the frontend to S3.
 
-## Notes / things to harden before production
+## New: multi-tab UI + Stripe payments
+
+The frontend now has 5 tabs (Home, Events, Nearby, Tickets, Profile) with a search
+bar, vibrant category-colored event posters, and real payment collection via
+Stripe Checkout — a booking is only created in DynamoDB after payment succeeds
+(via a webhook), so seats can't be reserved without paying.
+
+### One-time Stripe setup
+
+1. Create a free account at https://dashboard.stripe.com/register
+2. Go to **Developers → API keys**, copy the **Secret key** (starts `sk_test_...`
+   while testing, `sk_live_...` for real payments)
+3. Store it in AWS Secrets Manager, **in the same region as your stack (us-east-1)**:
+   ```
+   aws secretsmanager create-secret --name stripe-secret-key \
+     --secret-string "sk_test_..." --region us-east-1
+   ```
+4. Deploy once so the `WebhookUrl` output exists:
+   ```
+   cd infrastructure
+   sam deploy --parameter-overrides StripeSecretKey=sk_test_... StripeWebhookSecret=placeholder FrontendUrlParam=""
+   ```
+   Copy the `WebhookUrl` and `FrontendUrl` values from the output.
+5. In the Stripe dashboard, go to **Developers → Webhooks → Add endpoint**,
+   paste the `WebhookUrl`, and select the `checkout.session.completed` event.
+   Copy the **Signing secret** it gives you (starts `whsec_...`).
+6. Store that too:
+   ```
+   aws secretsmanager create-secret --name stripe-webhook-secret \
+     --secret-string "whsec_..." --region us-east-1
+   ```
+7. Redeploy with the real webhook secret and frontend URL:
+   ```
+   sam deploy --parameter-overrides StripeSecretKey=sk_test_... StripeWebhookSecret=whsec_... FrontendUrlParam=<FrontendUrl from step 4>
+   ```
+
+If you're using the CI/CD pipeline, `buildspec.yml` already pulls both secrets
+from Secrets Manager automatically on every push — you only need steps 1-3, 5-6
+done once; the pipeline handles the `sam deploy` with the right parameters.
+
+### Testing payments
+
+Use Stripe's test card `4242 4242 4242 4242`, any future expiry date, any CVC,
+any ZIP — no real money moves in test mode.
+
+### New API routes
+
+| Method | Path                    | Description                          |
+|--------|--------------------------|----------------------------------------|
+| POST   | `/checkout`               | Starts a Stripe Checkout session       |
+| POST   | `/webhook`                 | Stripe calls this on payment success   |
+| GET    | `/bookings/lookup?session_id=` | Look up a booking after checkout  |
+| GET    | `/bookings?email=`         | List a user's bookings (My Tickets)    |
+
 
 - `pipeline.yaml` uses `AdministratorAccess` for the CodeBuild/CodePipeline roles
   for simplicity — scope this down to the specific services used.

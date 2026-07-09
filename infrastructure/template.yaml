@@ -21,6 +21,21 @@ Parameters:
   Stage:
     Type: String
     Default: prod
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Description: Stripe secret key (sk_live_... or sk_test_...)
+  StripeWebhookSecret:
+    Type: String
+    NoEcho: true
+    Description: Stripe webhook signing secret (whsec_...)
+  FrontendUrlParam:
+    Type: String
+    Default: ""
+    Description: >
+      Public frontend URL, used for Stripe redirect after checkout.
+      Leave blank on first deploy; set it after the FrontendUrl output
+      is known, then redeploy once.
 
 Resources:
 
@@ -143,12 +158,37 @@ Resources:
             Path: /events/{eventId}
             Method: GET
 
-  CreateBookingFunction:
+  CreateCheckoutSessionFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${ProjectName}-createBooking"
+      FunctionName: !Sub "${ProjectName}-createCheckoutSession"
       CodeUri: ../backend/src/
-      Handler: createBooking.handler
+      Handler: createCheckoutSession.handler
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
+          FRONTEND_URL: !Ref FrontendUrlParam
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref EventsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TicketApi
+            Path: /checkout
+            Method: POST
+
+  StripeWebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-stripeWebhook"
+      CodeUri: ../backend/src/
+      Handler: stripeWebhook.handler
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
+          STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
@@ -159,8 +199,25 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref TicketApi
-            Path: /bookings
+            Path: /webhook
             Method: POST
+
+  GetBookingBySessionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-getBookingBySession"
+      CodeUri: ../backend/src/
+      Handler: getBookingBySession.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref BookingsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TicketApi
+            Path: /bookings/lookup
+            Method: GET
 
   ListBookingsFunction:
     Type: AWS::Serverless::Function
@@ -183,6 +240,10 @@ Outputs:
   ApiEndpoint:
     Description: API Gateway base URL
     Value: !Sub "https://${TicketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+
+  WebhookUrl:
+    Description: Register this URL as a Stripe webhook endpoint (checkout.session.completed)
+    Value: !Sub "https://${TicketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/webhook"
 
   FrontendUrl:
     Description: S3 static website URL

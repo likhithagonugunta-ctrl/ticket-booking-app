@@ -3,43 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ticket Booking</title>
+  <title>StubBox — Find your next event</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>🎫 Ticket Booking</h1>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <header class="topbar">
+    <div class="brand">Stub<span>Box</span></div>
+    <div id="searchBar" class="search-wrap">
+      <input id="searchInput" type="text" placeholder="Search events, venues, cities…" />
+    </div>
   </header>
 
-  <main>
-    <section id="events-section">
-      <h2>Upcoming Events</h2>
-      <div id="events-list" class="grid">Loading events...</div>
+  <main id="app">
+
+    <section id="tab-home" class="tab-panel">
+      <div class="hero">
+        <p class="hero-eyebrow">NOW BOOKING</p>
+        <h1 class="hero-title">Live shows.<br />Real seats.<br />No refresh needed.</h1>
+      </div>
+      <div class="section-head">
+        <h2>Available events</h2>
+        <span id="homeCount" class="section-count"></span>
+      </div>
+      <div id="homeEvents" class="poster-grid">Loading events…</div>
     </section>
 
-    <section id="booking-section" class="hidden">
-      <h2>Book Tickets</h2>
-      <form id="booking-form">
-        <input type="hidden" id="booking-event-id" />
-        <p id="booking-event-name"></p>
+    <section id="tab-events" class="tab-panel hidden">
+      <div class="section-head">
+        <h2>All events</h2>
+        <span id="eventsCount" class="section-count"></span>
+      </div>
+      <div id="allEvents" class="poster-grid">Loading events…</div>
+    </section>
 
-        <label for="userName">Full name</label>
-        <input type="text" id="userName" required />
+    <section id="tab-nearby" class="tab-panel hidden">
+      <div class="section-head">
+        <h2>Near you</h2>
+        <button id="locateBtn" class="pill-btn">Use my location</button>
+      </div>
+      <p id="nearbyStatus" class="muted-note">Tap "Use my location" to sort events by distance.</p>
+      <div id="nearbyEvents" class="poster-grid"></div>
+    </section>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" required />
+    <section id="tab-tickets" class="tab-panel hidden">
+      <div class="section-head">
+        <h2>My tickets</h2>
+      </div>
+      <p id="ticketsStatus" class="muted-note"></p>
+      <div id="ticketsList" class="ticket-stub-list"></div>
+    </section>
 
+    <section id="tab-profile" class="tab-panel hidden">
+      <div class="section-head">
+        <h2>Profile</h2>
+      </div>
+      <form id="profileForm" class="stub-card form-card">
+        <label for="profileName">Full name</label>
+        <input type="text" id="profileName" required />
+        <label for="profileEmail">Email</label>
+        <input type="email" id="profileEmail" required />
+        <button type="submit">Save profile</button>
+      </form>
+      <p id="profileStatus" class="muted-note"></p>
+    </section>
+
+    <section id="booking-panel" class="tab-panel hidden">
+      <div class="section-head">
+        <h2>Book tickets</h2>
+        <button id="cancelBooking" class="pill-btn ghost">← Back</button>
+      </div>
+      <div id="bookingPoster" class="poster-hero"></div>
+      <form id="bookingForm" class="stub-card form-card">
+        <input type="hidden" id="bookingEventId" />
         <label for="seats">Number of seats</label>
         <input type="number" id="seats" min="1" value="1" required />
-
-        <button type="submit">Confirm Booking</button>
-        <button type="button" id="cancel-booking">Cancel</button>
+        <p id="bookingPriceLine" class="price-line"></p>
+        <button type="submit">Pay & confirm booking</button>
       </form>
-      <p id="booking-status"></p>
+      <p id="bookingStatus" class="muted-note"></p>
     </section>
+
   </main>
 
-  <!-- config.js is generated/overwritten by the CI/CD pipeline with the real API URL -->
+  <nav class="tabbar">
+    <button class="tab-btn active" data-tab="home"><span class="tab-icon">🏠</span>Home</button>
+    <button class="tab-btn" data-tab="events"><span class="tab-icon">🎟️</span>Events</button>
+    <button class="tab-btn" data-tab="nearby"><span class="tab-icon">📍</span>Nearby</button>
+    <button class="tab-btn" data-tab="tickets"><span class="tab-icon">🎫</span>Tickets</button>
+    <button class="tab-btn" data-tab="profile"><span class="tab-icon">👤</span>Profile</button>
+  </nav>
+
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
