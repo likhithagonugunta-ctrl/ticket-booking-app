@@ -128,8 +128,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-listEvents"
-      CodeUri: ../backend/src/
-      Handler: listEvents.handler
+      CodeUri: ../backend/
+      Handler: src/listEvents.handler
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref EventsTable
@@ -145,8 +145,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-getEvent"
-      CodeUri: ../backend/src/
-      Handler: getEvent.handler
+      CodeUri: ../backend/
+      Handler: src/getEvent.handler
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref EventsTable
@@ -162,8 +162,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-createCheckoutSession"
-      CodeUri: ../backend/src/
-      Handler: createCheckoutSession.handler
+      CodeUri: ../backend/
+      Handler: src/createCheckoutSession.handler
       Environment:
         Variables:
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
@@ -183,8 +183,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-stripeWebhook"
-      CodeUri: ../backend/src/
-      Handler: stripeWebhook.handler
+      CodeUri: ../backend/
+      Handler: src/stripeWebhook.handler
       Environment:
         Variables:
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
@@ -206,8 +206,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-getBookingBySession"
-      CodeUri: ../backend/src/
-      Handler: getBookingBySession.handler
+      CodeUri: ../backend/
+      Handler: src/getBookingBySession.handler
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref BookingsTable
@@ -223,8 +223,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-listBookings"
-      CodeUri: ../backend/src/
-      Handler: listBookings.handler
+      CodeUri: ../backend/
+      Handler: src/listBookings.handler
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref BookingsTable
