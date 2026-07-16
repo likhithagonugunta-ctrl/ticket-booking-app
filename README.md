@@ -1,3 +1,9 @@
+# Ticket Booking App
+
+**Live site:** http://ticket-booking-app-frontend-527133285656.s3-website-us-east-1.amazonaws.com
+**Repository:** https://github.com/likhithagonugunta-ctrl/ticket-booking-app
+
+---
 # Ticket Booking Application (AWS Serverless)
 
 A serverless ticket booking app: static frontend on S3, REST API via API Gateway +
